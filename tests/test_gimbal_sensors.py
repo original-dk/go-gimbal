@@ -36,6 +36,21 @@ class GimbalSensorTests(unittest.TestCase):
             self.assertFalse(runtime.auto)
             runtime.draw(runtime.renderer.scene)
 
+    def test_camera_reuses_sensor_frame_once(self):
+        from unittest.mock import Mock
+        g = GimbalOverlay()
+        g.update([0, 0, .4], [1, 0, 0, 0])
+        with GimbalSensors(g, camera_window=False) as runtime:
+            window = Mock()
+            window.update.return_value = True
+            runtime.camera_window = window
+            runtime.update(now=0)
+            runtime.update_camera_window()
+            for _ in range(10):
+                runtime.update_camera_window()
+            self.assertEqual(window.update.call_count, 1)
+            self.assertIs(window.update.call_args.kwargs['rgb'], runtime.camera_pixels)
+
     def test_existing_walking_and_skill_key_edges(self):
         keys = K.Keys()
         keys.edge(K.UP, True, 0)

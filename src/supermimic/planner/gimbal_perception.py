@@ -370,17 +370,22 @@ class CameraWindow:
         finally:
             glfw.make_context_current(previous)
 
-    def update(self, model, data, laser_range, measurement, aim_status=None):
+    def update(self, model, data, laser_range, measurement, aim_status=None, rgb=None):
         glfw = self.glfw
-        glfw.poll_events()
+        # The MuJoCo viewer owns event polling and its keyboard hook context.
         if glfw.window_should_close(self.window) or glfw.get_key(self.window, glfw.KEY_ESCAPE) == glfw.PRESS:
             return False
         previous = glfw.get_current_context()
         try:
             glfw.make_context_current(self.window)
-            update_camera_scene(model, data, self.scene, self.camera, self.option, laser_range)
             width, height = glfw.get_framebuffer_size(self.window)
-            mujoco.mjr_render(mujoco.MjrRect(0, 0, width, height), self.scene, self.context)
+            if rgb is None:
+                update_camera_scene(model, data, self.scene, self.camera, self.option, laser_range)
+                mujoco.mjr_render(mujoco.MjrRect(0, 0, width, height), self.scene, self.context)
+            else:
+                # Reuse the sensing image rather than render the scene a second time.
+                mujoco.mjr_drawPixels(np.ascontiguousarray(rgb[::-1]).ravel(), None,
+                                     mujoco.MjrRect(0, 0, rgb.shape[1], rgb.shape[0]), self.context)
             detection, fusion = measurement
             draw_marker_hud(model, data, width, height, self.context, detection, fusion)
             if aim_status is not None:

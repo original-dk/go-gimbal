@@ -15,6 +15,8 @@ class GimbalSensors:
         self.scan = None
         self.measurement = (None, None)
         self.rgb = None
+        self.camera_pixels = None
+        self.camera_dirty = False
         self.next_scan = 0.
         self.goal = overlay.angles.copy() if overlay is not None else np.zeros(2)
         self.velocity = np.zeros(2)
@@ -61,6 +63,8 @@ class GimbalSensors:
             self.scan = perception.scan_lidar(m, d)
             self.renderer.update_scene(d, camera='fixed_camera')
             pixels = self.renderer.render().copy()
+            self.camera_pixels = pixels
+            self.camera_dirty = True
             self.measurement = perception.estimate_fusion(m, d, pixels, self.scan)
             detection, fusion = self.measurement
             if self.auto:
@@ -97,9 +101,10 @@ class GimbalSensors:
             self.status = 'manual'
 
     def update_camera_window(self):
-        if self.camera_window is not None:
+        if self.camera_window is not None and self.camera_dirty:
+            self.camera_dirty = False
             if not self.camera_window.update(self.overlay.model, self.overlay.data, 10.,
-                                             self.measurement, self.status):
+                                             self.measurement, self.status, rgb=self.camera_pixels):
                 self.camera_window.close()
                 self.camera_window = None
 
