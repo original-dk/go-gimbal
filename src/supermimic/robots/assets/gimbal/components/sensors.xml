@@ -6,5 +6,9 @@
     <camera name="fixed_camera" pos="0.035 0 0" xyaxes="0 -1 0 0 0 1" fovy="60" />
     <geom name="lidar_housing" type="cylinder" pos="0 0 0.055" size="0.025 0.025" rgba="0.15 0.65 0.55 1" />
     <site name="lidar_origin" pos="0.028 0 0.055" type="sphere" size="0.004" rgba="0 1 0.6 1" />
+    <geom name="sensor_mount_foot" type="box" pos="-.08 0 -.04" size=".03 .035 .005" rgba=".25 .27 .30 1" group="1" contype="0" conaffinity="0" />
+    <geom name="sensor_mount_post" type="box" pos="-.08 0 -.02" size=".015 .025 .02" rgba=".25 .27 .30 1" group="1" contype="0" conaffinity="0" />
+    <geom name="sensor_mount_arm" type="box" pos="-.04 0 -.02" size=".055 .025 .008" rgba=".25 .27 .30 1" group="1" contype="0" conaffinity="0" />
+    <geom name="lidar_mount_spacer" type="cylinder" pos="0 0 .0275" size=".012 .0075" rgba=".25 .27 .30 1" group="1" contype="0" conaffinity="0" />
   </body>
 </mujocoinclude>
