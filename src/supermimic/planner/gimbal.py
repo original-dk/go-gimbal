@@ -14,7 +14,7 @@ ASSETS = Path(__file__).resolve().parents[1] / 'robots/assets/gimbal'
 class GimbalOverlay:
     """J/L yaw, I/K pitch, U reset. Values are radians; target XYZ is trunk-local meters."""
 
-    def __init__(self, yaw=0., pitch=0., target=None):
+    def __init__(self, yaw=0., pitch=0., target=None, source_model=None):
         # A separate combined display model gives the renderer valid mesh IDs.
         rover = ASSETS.parent / 'rover/dobot.xml'
         root = ET.parse(rover).getroot()
@@ -30,7 +30,16 @@ class GimbalOverlay:
         ET.SubElement(root.find('worldbody'), 'geom', name='display_floor', type='plane',
                       size='20 20 .1', rgba='.55 .58 .6 1')
         ET.SubElement(root.find('worldbody'), 'light', pos='0 0 4', dir='0 0 -1')
-        self.model = mujoco.MjModel.from_xml_string(ET.tostring(root, encoding='unicode'))
+        assets = {}
+        if source_model is not None:
+            self._copy_floor(root, source_model, assets)
+        else:
+            asset = root.find('asset')
+            ET.SubElement(asset, 'texture', name='display_grid', type='2d', builtin='checker',
+                          rgb1='.2 .3 .4', rgb2='.1 .2 .3', width='512', height='512')
+            ET.SubElement(asset, 'material', name='display_ground', texture='display_grid', texrepeat='5 5', texuniform='true')
+            root.find("./worldbody/geom[@name='display_floor']").set('material', 'display_ground')
+        self.model = mujoco.MjModel.from_xml_string(ET.tostring(root, encoding='unicode'), assets=assets)
         self.data = mujoco.MjData(self.model)
         mount = self.model.body('gimbal_mount').id
         self.solver = GimbalAngleSolver(
@@ -45,6 +54,48 @@ class GimbalOverlay:
         self.status = 'manual'
         if target is not None:
             self.aim(target)
+
+    @staticmethod
+    def _copy_floor(root, source, assets):
+        """Preserve the live environment's plane and checker texture."""
+        import struct
+        import zlib
+        planes = np.flatnonzero(source.geom_type == mujoco.mjtGeom.mjGEOM_PLANE)
+        if not len(planes):
+            raise ValueError('Gimbal display currently requires a plane terrain')
+        gid = int(planes[0])
+        floor = root.find("./worldbody/geom[@name='display_floor']")
+        floor.set('pos', ' '.join(map(str, source.geom_pos[gid])))
+        floor.set('quat', ' '.join(map(str, source.geom_quat[gid])))
+        floor.set('size', ' '.join(map(str, source.geom_size[gid])))
+        floor.set('rgba', ' '.join(map(str, source.geom_rgba[gid])))
+        mid = int(source.geom_matid[gid])
+        if mid < 0:
+            return
+        material = ET.SubElement(root.find('asset'), 'material', name='display_ground',
+            rgba=' '.join(map(str, source.mat_rgba[mid])),
+            texrepeat=' '.join(map(str, source.mat_texrepeat[mid])),
+            texuniform='true' if source.mat_texuniform[mid] else 'false',
+            reflectance=str(source.mat_reflectance[mid]))
+        floor.set('material', 'display_ground')
+        tids = np.asarray(source.mat_texid[mid]).ravel()
+        valid = tids[tids >= 0]
+        if not len(valid):
+            return
+        tid = int(valid[0])
+        w, h = int(source.tex_width[tid]), int(source.tex_height[tid])
+        channels = int(source.tex_nchannel[tid]) if hasattr(source, 'tex_nchannel') else 3
+        pixels = source.tex_data if hasattr(source, 'tex_data') else source.tex_rgb
+        start = int(source.tex_adr[tid])
+        rgb = np.asarray(pixels[start:start+w*h*channels]).reshape(h, w, channels)[..., :3]
+        def chunk(kind, data):
+            return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', zlib.crc32(kind+data))
+        raw = b''.join(b'\x00' + row.tobytes() for row in rgb)
+        assets['display_floor.png'] = (b'\x89PNG\r\n\x1a\n' +
+            chunk(b'IHDR', struct.pack('>2I5B', w, h, 8, 2, 0, 0, 0)) +
+            chunk(b'IDAT', zlib.compress(raw)) + chunk(b'IEND', b''))
+        ET.SubElement(root.find('asset'), 'texture', name='display_grid', type='2d', file='display_floor.png')
+        material.set('texture', 'display_grid')
 
     def aim(self, point_carrier):
         """Accept a point already expressed in the trunk frame, not camera pixels."""
@@ -84,9 +135,17 @@ class GimbalOverlay:
         lookup = {source_model.joint(i).name.split('/')[-1]: i for i in range(source_model.njnt)}
         for j in range(self.model.njnt):
             name = self.model.joint(j).name
-            if name not in lookup:
+            if self.model.jnt_type[j] == mujoco.mjtJoint.mjJNT_FREE:
+                roots = np.flatnonzero(source_model.jnt_type == mujoco.mjtJoint.mjJNT_FREE)
+                if len(roots) != 1:
+                    raise ValueError('Expected one policy free root')
+                k = int(roots[0])
+            elif name in lookup:
+                k = lookup[name]
+            elif j in [self.model.joint(n).id for n in ('yaw_joint', 'pitch_joint')]:
                 continue
-            k = lookup[name]
+            else:
+                raise ValueError(f'Policy joint missing from display mapping: {name}')
             nq, nv = (7, 6) if self.model.jnt_type[j] == mujoco.mjtJoint.mjJNT_FREE else (1, 1)
             a, b = self.model.jnt_qposadr[j], source_model.jnt_qposadr[k]
             self.data.qpos[a:a+nq] = qpos[b:b+nq]

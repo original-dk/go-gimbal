@@ -23,6 +23,20 @@ class GimbalOverlayTests(unittest.TestCase):
             direction = g.data.site_xmat[site].reshape(3, 3)[:, 0]
             np.testing.assert_allclose(direction, (world_target-origin)/np.linalg.norm(world_target-origin), atol=1e-6)
 
+    def test_live_checker_and_renamed_policy_root_are_preserved(self):
+        g = GimbalOverlay()
+        spec = mujoco.MjSpec.from_file(str(Path(__file__).resolve().parents[1]/'src/supermimic/robots/assets/rover/dobot.xml'))
+        spec.joint('joint_fixed_world').name = 'robot/floating_base'
+        source = spec.compile()
+        # Use a textured source display model to exercise the live texture copy.
+        textured = GimbalOverlay(source_model=g.model)
+        np.testing.assert_array_equal(textured.model.tex_data, g.model.tex_data)
+        pos = mujoco.MjData(source).qpos.copy()
+        pos[:3] = [2, -1, .45]
+        pos[3:7] = [1, 0, 0, 0]
+        g.sync_policy(source, pos, np.zeros(source.nv))
+        np.testing.assert_allclose(g.data.qpos[:7], pos[:7])
+
     def test_keys_limits_and_no_policy_model_changes(self):
         g = GimbalOverlay()
         self.assertFalse(g.key_callback(265))  # walking key is not consumed

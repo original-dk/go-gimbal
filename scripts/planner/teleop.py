@@ -90,15 +90,16 @@ def main(planner_run: str = "rover_v2_l1", planner_ckpt: str = "planner_last.pt"
     from supermimic.planner.gimbal import GimbalOverlay
 
     source_model = mjm
-    overlay = GimbalOverlay(np.deg2rad(gimbal_yaw), np.deg2rad(gimbal_pitch), gimbal_target) if gimbal else None
+    overlay = GimbalOverlay(np.deg2rad(gimbal_yaw), np.deg2rad(gimbal_pitch), gimbal_target, source_model=source_model) if gimbal else None
 
     if overlay is not None:
         mjm, mjd = overlay.model, overlay.data
         base_id = mjm.body('link_trunk').id
 
     def key_callback(key):
-        if overlay is None or not overlay.key_callback(key):
-            K.key_callback(key)
+        K.key_callback(key)  # always preserve the original GLFW press/release hook
+        if overlay is not None:
+            overlay.key_callback(key)
 
     print(__doc__.split("A skill key")[0])
     fallen, note, slow = False, "", 1.0
