@@ -27,6 +27,14 @@ class GimbalOverlay:
         mount.remove(mount.find('include'))
         mount.append(ET.parse(ASSETS / 'components/gimbal_body.xml').getroot().find('body'))
         trunk.append(mount)
+        trunk.append(ET.parse(ASSETS / 'components/sensors.xml').getroot().find('body'))
+        for body in ET.parse(ASSETS / 'components/targets.xml').getroot():
+            root.find('worldbody').append(body)
+        ET.SubElement(root.find('asset'), 'texture', name='aruco_texture', type='2d',
+                      file=str(ASSETS / 'textures/aruco_4x4_50_id7_texture.png'))
+        ET.SubElement(root.find('asset'), 'material', name='aruco_material',
+                      texture='aruco_texture', texuniform='false', reflectance='0')
+
         ET.SubElement(root.find('worldbody'), 'geom', name='display_floor', type='plane',
                       size='20 20 .1', rgba='.55 .58 .6 1')
         ET.SubElement(root.find('worldbody'), 'light', pos='0 0 4', dir='0 0 -1')

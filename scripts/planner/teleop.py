@@ -77,7 +77,7 @@ def run_selftest(s: TeleopSession, level: int) -> None:
 
 def main(planner_run: str = "rover_v2_l1", planner_ckpt: str = "planner_last.pt", ckpt: Path = ROOT / "logs" / "rover_r2" / "ckpt_latest.pt", clip: str = "rover_e009_s0", level: int = 1,
          dr: bool = False, stand_hold: bool = True, fall_tilt: float = math.radians(60), device: str = "cuda:0", selftest: bool = False, gimbal: bool = True, gimbal_yaw: float = 0., gimbal_pitch: float = 0.,
-         gimbal_target: tuple[float, float, float] | None = None) -> None:
+         gimbal_target: tuple[float, float, float] | None = None, sensors: bool = True, auto_aim: bool = True) -> None:
     s = TeleopSession(planner_run, planner_ckpt, ckpt, clip=clip, dr=dr, stand_hold=stand_hold, device=device)
     print(f"[teleop] tracker {ckpt}; planner {planner_run}/{planner_ckpt}")
     if selftest:
@@ -96,14 +96,18 @@ def main(planner_run: str = "rover_v2_l1", planner_ckpt: str = "planner_last.pt"
         mjm, mjd = overlay.model, overlay.data
         base_id = mjm.body('link_trunk').id
 
+    from supermimic.planner.gimbal_runtime import GimbalSensors
+    sensor_runtime = GimbalSensors(overlay, enabled=sensors, auto=auto_aim and gimbal_target is None)
+
     def key_callback(key):
+        sensor_runtime.key_callback(key)
         K.key_callback(key)  # always preserve the original GLFW press/release hook
         if overlay is not None:
             overlay.key_callback(key)
 
     print(__doc__.split("A skill key")[0])
     fallen, note, slow = False, "", 1.0
-    with mujoco.viewer.launch_passive(mjm, mjd, key_callback=key_callback, show_left_ui=False, show_right_ui=False) as viewer:
+    with sensor_runtime, mujoco.viewer.launch_passive(mjm, mjd, key_callback=key_callback, show_left_ui=False, show_right_ui=False) as viewer:
         viewer.cam.type = mujoco.mjtCamera.mjCAMERA_TRACKING
         viewer.cam.trackbodyid = base_id
         viewer.cam.distance, viewer.cam.elevation, viewer.cam.azimuth = 2.2, -20.0, 135.0
@@ -146,9 +150,13 @@ def main(planner_run: str = "rover_v2_l1", planner_ckpt: str = "planner_last.pt"
                 viewer.user_scn.ngeom += 1
             if overlay is not None:
                 overlay.update(mjd.xpos[base_id], mjd.xquat[base_id])
-                overlay.draw(viewer.user_scn)
+                sensor_runtime.update()
+                sensor_runtime.draw(viewer.user_scn)
             panel = as_rgb(joystick_panel(K.KEYS.lit(), s.cmd, s.robot_velocity(), K.LEVELS[level]))
-            viewer.set_images((mujoco.MjrRect(12, 12, panel.shape[1], panel.shape[0]), panel))
+            images = [(mujoco.MjrRect(12, 12, panel.shape[1], panel.shape[0]), panel)]
+            if sensor_runtime.rgb is not None:
+                images.append((mujoco.MjrRect(12, panel.shape[0] + 24, 640, 480), sensor_runtime.rgb))
+            viewer.set_images(images)
             left = "Status\nKeys\nSkills"
             right = (f"{'FALLEN - press Backspace' if fallen else s.status()}{'  ' + note if note else ''}"
                      f"{'' if slow <= 1.05 else f'  (running {slow:.1f}x slower than real time)'}\n"

@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mujocoinclude>
+  <body name="scan_target_center_body" pos="1.5 0 0.25">
+    <geom name="target_icon" group="2" type="box" pos="-0.082 0 0.08" size="0.001 0.065 0.065" mass="0" material="aruco_material" />
+    <site name="target_icon_center" pos="-0.084 0 0.08" size="0.001" rgba="0 0 0 0" />
+    <geom name="scan_target_center" group="0" contype="1" conaffinity="1" mass="1" type="box" size="0.08 0.10 0.25" rgba="0.85 0.28 0.16 1" />
+  </body>
+  <body name="scan_target_left_body" pos="1.1 0.48 0.12">
+    <geom name="scan_target_left" group="0" contype="1" conaffinity="1" mass="1" type="box" euler="0 0 0.25" size="0.12 0.12 0.12" rgba="0.18 0.45 0.85 1" />
+  </body>
+  <body name="near_sphere_body" pos="0.95 -0.30 0.12">
+    <geom name="near_sphere" group="0" contype="1" conaffinity="1" mass="1" type="sphere" size="0.12" rgba="0.95 0.68 0.08 1" />
+  </body>
+  <body name="middle_cylinder_body" pos="1.8 -0.72 0.25">
+    <geom name="middle_cylinder" group="0" contype="1" conaffinity="1" mass="1" type="cylinder" size="0.14 0.25" rgba="0.15 0.7 0.42 1" />
+  </body>
+  <body name="far_box_body" pos="2.65 0.65 0.28">
+    <geom name="far_box" group="0" contype="1" conaffinity="1" mass="1" type="box" euler="0 0 -0.3" size="0.22 0.18 0.28" rgba="0.62 0.3 0.78 1" />
+  </body>
+  <body name="far_sphere_body" pos="2.9 -0.30 0.20">
+    <geom name="far_sphere" group="0" contype="1" conaffinity="1" mass="1" type="sphere" size="0.20" rgba="0.1 0.65 0.78 1" />
+  </body>
+  <body name="far_column_body" pos="3.2 1.35 0.38">
+    <geom name="far_column" group="0" contype="1" conaffinity="1" mass="1" type="cylinder" size="0.14 0.38" rgba="0.85 0.5 0.2 1" />
+  </body>
+</mujocoinclude>

@@ -212,3 +212,28 @@ link_trunk 结构坐标，不是质心。局部 pos/quat 直接交给独立求�
 `uv run python -m unittest discover -s tests -p test_gimbal_overlay.py`。
 
 显示模型使用仓库 Rover XML、背部支架和云台组成独立场景，地面为平面；策略物理状态按关节名同步到显示模型。该入口目前面向默认平地 teleop，不复制自定义地形。
+
+
+## Teleop 相机、雷达与标识自动瞄准
+
+已迁入原 simple_pan_tilt_gimbal 的目标柱/ArUco ID7、其他测试物体、前置 RGB
+相机、3D LiDAR、像素识别、平面深度融合、反投影、载体坐标 XYZ 求解、
+扫描线/点云与激光命中显示。首次运行先 `uv sync`，新增依赖 OpenCV。
+
+默认 `uv run python scripts/planner/teleop.py` 启动自动瞄准，主窗口显示
+相机图像、像素、深度与载体 XYZ，保留原摇杆面板、技能、方向键及环境格子地面。
+F5 切换自动/手动；I/J/K/L/U 手动操作会退出自动模式，F5 可恢复。
+`--no-auto-aim` 仅显示传感器并手动控制；`--no-sensors` 关闭感知，回到原云台显示；
+`--no-gimbal` 恢复无云台原显示；显式 `--gimbal-target X Y Z` 优先使用原固定载体目标。
+
+前置传感器 pos=[.40,0,.10]，相对 link_trunk；相机光心还有 [.035,0,0]
+局部偏移。安装定义位于 components/sensors.xml，测试物体在 components/targets.xml。
+采用主窗口图像面板，不额外创建 GLFW 相机窗口，保留原窗口的按键释放处理。
+识别失败或目标不可达时保持当前角度，不读取标识位置替代测量。
+感知15Hz、载体控制50Hz；独立显示云台按速度/加速度限制转动，没有新增载荷动力学。
+
+目标物体目前固定在显示场景中：它们可被相机/雷达/激光检测，但没有加入
+策略的物理环境，不会阻挡狗的行走；自动避障不在本次迁移范围内。
+原项目的感知、相机窗口和导出工具函数保存在 planner/gimbal_perception.py 中；
+teleop 使用 GimbalSensors 管理渲染与融合生命周期。
+测试：`uv run python -m unittest discover -s tests -p "test_gimbal*.py"`。

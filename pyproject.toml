@@ -23,6 +23,7 @@ dependencies = [
   "pyyaml>=6.0",
   "onnx>=1.16",
   "onnxruntime>=1.17",
+  "opencv-python-headless>=4.10,<5",  # ArUco RGB detection and sensor HUD
   "pillow",  # on-screen keys (supermimic.planner.hud)
 ]
 
