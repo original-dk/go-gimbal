@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mujocoinclude>
+  <body name="base_link" pos="0 0 0">
+    <body name="yaw_stage" pos="0 0 0.0317">
+      <body name="pitch_stage" pos="0 0.0105747972958 0.0366">
+        <inertial pos="-0.00366934476291 -0.0252129469181 -0.0111358979275" mass="0.0323583787498189" fullinertia="2.02573565527e-05 5.46884981745e-06 1.90025248425e-05 -1.771348831e-06 -5.16822976803e-07 -5.17499012949e-06" />
+        <joint name="pitch_joint" type="hinge" axis="0 -1 0" range="-.785398 .785398" limited="true" damping=".005" armature=".000001" />
+        <geom name="Gimbal_04_rotor" type="mesh" mesh="Gimbal_04_rotor" group="1" />
+        <geom name="Gimbal_09" type="mesh" mesh="Gimbal_09" group="1" />
+        <geom name="Gimbal_12" type="mesh" mesh="Gimbal_12" group="1" />
+        <geom name="Gimbal_14" type="mesh" mesh="Gimbal_14" group="1" />
+        <geom name="Gimbal_15" type="mesh" mesh="Gimbal_15" group="1" />
+        <geom name="Gimbal_16" type="mesh" mesh="Gimbal_16" group="1" />
+        <geom name="Adapter_M2_to_M3" type="mesh" mesh="Adapter_M2_to_M3" group="1" />
+        <geom name="LaserHolder_Approx" type="mesh" mesh="LaserHolder_Approx" group="1" />
+        <geom name="LaserBrass_D6_L10_5" type="mesh" mesh="LaserBrass_D6_L10_5" group="1" />
+        <geom name="LaserPCB_Envelope_7x13" type="mesh" mesh="LaserPCB_Envelope_7x13" group="1" />
+        <geom name="M2_screw_0" type="mesh" mesh="M2_screw_0" group="1" />
+        <geom name="M2_screw_1" type="mesh" mesh="M2_screw_1" group="1" />
+        <geom name="M3_screw_0" type="mesh" mesh="M3_screw_0" group="1" />
+        <geom name="M3_screw_1" type="mesh" mesh="M3_screw_1" group="1" />
+        <site name="laser_origin" pos="-0.00575000000003 -0.0385747972958 -0.0121803398875" size=".001" rgba="1 0 0 1" />
+        <site name="laser_forward" pos="0.09424999999997001 -0.0385747972958 -0.0121803398875" size=".001" rgba="1 0 0 1" />
+      </body>
+      <inertial pos="4.06201994337e-06 0.0255019951492 0.0297066601464" mass="0.09826430760835571" fullinertia="4.37321002489e-05 3.07486194731e-05 2.75415084156e-05 -1.25554530103e-08 -3.22940270264e-09 -9.96552082253e-06" />
+      <joint name="yaw_joint" type="hinge" axis="0 0 1" range="-1.57079632679 1.57079632679" limited="true" damping=".005" armature=".000001" />
+      <geom name="Gimbal_00_rotor" type="mesh" mesh="Gimbal_00_rotor" group="1" />
+      <geom name="Gimbal_04_stator" type="mesh" mesh="Gimbal_04_stator" group="1" />
+      <geom name="Gimbal_05" type="mesh" mesh="Gimbal_05" group="1" />
+      <geom name="Gimbal_06" type="mesh" mesh="Gimbal_06" group="1" />
+      <geom name="Gimbal_07" type="mesh" mesh="Gimbal_07" group="1" />
+      <geom name="Gimbal_08" type="mesh" mesh="Gimbal_08" group="1" />
+      <geom name="Gimbal_10" type="mesh" mesh="Gimbal_10" group="1" />
+      <geom name="Gimbal_11" type="mesh" mesh="Gimbal_11" group="1" />
+      <geom name="Gimbal_13" type="mesh" mesh="Gimbal_13" group="1" />
+      <geom name="Gimbal_17" type="mesh" mesh="Gimbal_17" group="1" />
+      <geom name="Gimbal_18" type="mesh" mesh="Gimbal_18" group="1" />
+      <geom name="Gimbal_19" type="mesh" mesh="Gimbal_19" group="1" />
+      <geom name="Gimbal_20" type="mesh" mesh="Gimbal_20" group="1" />
+    </body>
+    <inertial pos="-7.44637768679e-07 -5.79051960549e-06 0.017851286605" mass="0.06893217400888284" fullinertia="1.00147469488e-05 1.00194771398e-05 1.06356486789e-05 4.78199730305e-10 -4.67696459632e-10 -7.01604029672e-09" />
+    <geom name="Gimbal_00_stator" type="mesh" mesh="Gimbal_00_stator" />
+    <geom name="Gimbal_01" type="mesh" mesh="Gimbal_01" />
+    <geom name="Gimbal_02" type="mesh" mesh="Gimbal_02" />
+    <geom name="Gimbal_03" type="mesh" mesh="Gimbal_03" />
+  </body>
+</mujocoinclude>

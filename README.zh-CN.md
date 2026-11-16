@@ -183,3 +183,32 @@ assets/showcase/         上面的 GIF
   额外片段中生成的动作用了 [Pinocchio](https://github.com/stack-of-tasks/pinocchio) 和 [Crocoddyl](https://github.com/loco-3d/crocoddyl)。
 - 代码采用 MIT 许可（`LICENSE`）。仓库里**不包含**动作数据；用这些数据生成的任何东西都受原始来源许可约束，
   其中 AI4Animation 为 CC BY-NC 4.0，不可商用。发布的跟踪器用这些数据训练，所以发布的模型仅供非商业研究使用。详见 `THIRD_PARTY_NOTICES.md`。
+
+
+## Teleop 狗背云台（独立显示）
+
+`uv run python scripts/planner/teleop.py` 默认显示背部云台，策略 checkpoint 和
+数据要求与原 teleop 相同。J/L 调 yaw、I/K 调 pitch（每次 2 度）、U 归零。
+狗的方向键和技能键保持原行为。`--no-gimbal` 关闭云台。
+
+```powershell
+uv run python scripts/planner/teleop.py --gimbal-yaw 20 --gimbal-pitch 10
+uv run python scripts/planner/teleop.py --gimbal-target 1.5 0.1 0.2
+```
+
+初始 yaw/pitch 参数单位为度。`--gimbal-target` 输入 **link_trunk 载体坐标系**
+XYZ（米，X前/Y左/Z上），不是相机坐标或世界坐标；按云台控制键会退出目标模式。
+程序接口 `GimbalOverlay.aim(point_carrier)` 可接入感知模块输出的载体坐标 XYZ。
+当前没有接入相机/雷达融合或世界目标跟踪；一个固定载体目标会随狗整体移动。
+
+安装位置定义在 `src/supermimic/robots/assets/gimbal/overlay.xml`：
+`gimbal_mount pos=".05 0 .13" quat="1 0 0 0"`，直接相对于狗的
+link_trunk 结构坐标，不是质心。局部 pos/quat 直接交给独立求解器。
+这是一组初始示例安装值，实际机械安装后需更新。
+
+云台是跟随躯干的独立渲染组件，不向狗的仿真添加关节、质量、碰撞或反作用力；
+原策略仍是 12 关节。云台角度为直接显示控制，不是电机动力学仿真。
+`--selftest` 继续只执行原有策略自测；云台无策略依赖测试：
+`uv run python -m unittest discover -s tests -p test_gimbal_overlay.py`。
+
+显示模型使用仓库 Rover XML、背部支架和云台组成独立场景，地面为平面；策略物理状态按关节名同步到显示模型。该入口目前面向默认平地 teleop，不复制自定义地形。

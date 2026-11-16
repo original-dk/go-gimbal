@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mujoco model="standalone_gimbal">
+  <compiler angle="radian" />
+  <asset>
+    <include file="components/gimbal_assets.xml" />
+  </asset>
+  <worldbody>
+    <include file="components/gimbal_body.xml" />
+  </worldbody>
+  <actuator>
+    <include file="components/gimbal_actuators.xml" />
+  </actuator>
+</mujoco>

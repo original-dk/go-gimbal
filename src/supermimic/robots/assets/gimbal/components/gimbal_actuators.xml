@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mujocoinclude>
+  <position name="yaw_position" joint="yaw_joint" kp="1" dampratio="1" ctrlrange="-1.57079632679 1.57079632679" />
+  <position name="pitch_position" joint="pitch_joint" kp="1" dampratio="1" ctrlrange="-.785398 .785398" />
+</mujocoinclude>

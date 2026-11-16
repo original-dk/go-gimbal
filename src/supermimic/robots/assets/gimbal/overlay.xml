@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mujoco model="standalone_gimbal">
+  <compiler angle="radian" />
+  <asset>
+    <include file="components/gimbal_assets.xml" />
+  </asset>
+  <worldbody>
+    <body name="carrier_pose">
+      <freejoint name="carrier_pose_joint" />
+      <body name="gimbal_mount" pos=".05 0 .13" quat="1 0 0 0">
+        <include file="components/gimbal_body.xml" />
+        <geom name="gimbal_mount_bracket" type="box" pos="0 0 -.035" size=".035 .04 .035" rgba=".25 .27 .3 1" contype="0" conaffinity="0" />
+      </body>
+    </body>
+  </worldbody>
+  <actuator>
+    <include file="components/gimbal_actuators.xml" />
+  </actuator>
+</mujoco>

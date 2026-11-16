@@ -76,7 +76,8 @@ def run_selftest(s: TeleopSession, level: int) -> None:
 
 
 def main(planner_run: str = "rover_v2_l1", planner_ckpt: str = "planner_last.pt", ckpt: Path = ROOT / "logs" / "rover_r2" / "ckpt_latest.pt", clip: str = "rover_e009_s0", level: int = 1,
-         dr: bool = False, stand_hold: bool = True, fall_tilt: float = math.radians(60), device: str = "cuda:0", selftest: bool = False) -> None:
+         dr: bool = False, stand_hold: bool = True, fall_tilt: float = math.radians(60), device: str = "cuda:0", selftest: bool = False, gimbal: bool = True, gimbal_yaw: float = 0., gimbal_pitch: float = 0.,
+         gimbal_target: tuple[float, float, float] | None = None) -> None:
     s = TeleopSession(planner_run, planner_ckpt, ckpt, clip=clip, dr=dr, stand_hold=stand_hold, device=device)
     print(f"[teleop] tracker {ckpt}; planner {planner_run}/{planner_ckpt}")
     if selftest:
@@ -86,9 +87,22 @@ def main(planner_run: str = "rover_v2_l1", planner_ckpt: str = "planner_last.pt"
     sim = s.env.sim
     mjm, mjd = sim.mj_model, sim.mj_data
     base_id = next(i for i in range(mjm.nbody) if (mujoco.mj_id2name(mjm, mujoco.mjtObj.mjOBJ_BODY, i) or "").split("/")[-1] == "link_trunk")
+    from supermimic.planner.gimbal import GimbalOverlay
+
+    source_model = mjm
+    overlay = GimbalOverlay(np.deg2rad(gimbal_yaw), np.deg2rad(gimbal_pitch), gimbal_target) if gimbal else None
+
+    if overlay is not None:
+        mjm, mjd = overlay.model, overlay.data
+        base_id = mjm.body('link_trunk').id
+
+    def key_callback(key):
+        if overlay is None or not overlay.key_callback(key):
+            K.key_callback(key)
+
     print(__doc__.split("A skill key")[0])
     fallen, note, slow = False, "", 1.0
-    with mujoco.viewer.launch_passive(mjm, mjd, key_callback=K.key_callback, show_left_ui=False, show_right_ui=False) as viewer:
+    with mujoco.viewer.launch_passive(mjm, mjd, key_callback=key_callback, show_left_ui=False, show_right_ui=False) as viewer:
         viewer.cam.type = mujoco.mjtCamera.mjCAMERA_TRACKING
         viewer.cam.trackbodyid = base_id
         viewer.cam.distance, viewer.cam.elevation, viewer.cam.azimuth = 2.2, -20.0, 135.0
@@ -109,8 +123,11 @@ def main(planner_run: str = "rover_v2_l1", planner_ckpt: str = "planner_last.pt"
             t0 = time.perf_counter()
             s.step(K.stick_target(K.KEYS, level, *s.box))
             fallen = fallen or s.tilt_deg() > math.degrees(fall_tilt)
-            mjd.qpos[:] = sim.data.qpos[0].cpu().numpy()
-            mjd.qvel[:] = sim.data.qvel[0].cpu().numpy()
+            if overlay is not None:
+                overlay.sync_policy(source_model, sim.data.qpos[0].cpu().numpy(), sim.data.qvel[0].cpu().numpy())
+            else:
+                mjd.qpos[:] = sim.data.qpos[0].cpu().numpy()
+                mjd.qvel[:] = sim.data.qvel[0].cpu().numpy()
             mujoco.mj_forward(mjm, mjd)
             # The plan's root path, 1 s ahead, drawn from the robot (the plan is local: rotate it onto the robot's heading).
             viewer.user_scn.ngeom = 0
@@ -126,6 +143,9 @@ def main(planner_run: str = "rover_v2_l1", planner_ckpt: str = "planner_last.pt"
                 mujoco.mjv_initGeom(viewer.user_scn.geoms[viewer.user_scn.ngeom], mujoco.mjtGeom.mjGEOM_SPHERE, np.array([0.015, 0, 0]), pos, np.eye(3).flatten(),
                                     np.array([0.1, 0.9, 0.2, 0.8], dtype=np.float32))
                 viewer.user_scn.ngeom += 1
+            if overlay is not None:
+                overlay.update(mjd.xpos[base_id], mjd.xquat[base_id])
+                overlay.draw(viewer.user_scn)
             panel = as_rgb(joystick_panel(K.KEYS.lit(), s.cmd, s.robot_velocity(), K.LEVELS[level]))
             viewer.set_images((mujoco.MjrRect(12, 12, panel.shape[1], panel.shape[0]), panel))
             left = "Status\nKeys\nSkills"
@@ -133,6 +153,9 @@ def main(planner_run: str = "rover_v2_l1", planner_ckpt: str = "planner_last.pt"
                      f"{'' if slow <= 1.05 else f'  (running {slow:.1f}x slower than real time)'}\n"
                      "arrows walk / turn, Shift+L/R sideways, PgUp / PgDn speed, Backspace reset\n"
                      "F6 sit  F7 shake hands  F8 high five  F9 stretch  F10 dance")
+            if overlay is not None:
+                left += "\nGimbal"
+                right += "\n" + overlay.label()
             viewer.set_texts((mujoco.mjtFontScale.mjFONTSCALE_150.value, mujoco.mjtGridPos.mjGRID_TOPLEFT.value, left, right))
             viewer.sync()
             next_t += 0.02

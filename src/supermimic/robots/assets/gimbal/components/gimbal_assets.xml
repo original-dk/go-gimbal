@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mujocoinclude>
+  <mesh name="Gimbal_00_stator" file="wheeltec_meshes/Gimbal_00_stator.stl" />
+  <mesh name="Gimbal_01" file="wheeltec_meshes/Gimbal_01.stl" />
+  <mesh name="Gimbal_02" file="wheeltec_meshes/Gimbal_02.stl" />
+  <mesh name="Gimbal_03" file="wheeltec_meshes/Gimbal_03.stl" />
+  <mesh name="Gimbal_00_rotor" file="wheeltec_meshes/Gimbal_00_rotor.stl" />
+  <mesh name="Gimbal_04_stator" file="wheeltec_meshes/Gimbal_04_stator.stl" />
+  <mesh name="Gimbal_05" file="wheeltec_meshes/Gimbal_05.stl" />
+  <mesh name="Gimbal_06" file="wheeltec_meshes/Gimbal_06.stl" />
+  <mesh name="Gimbal_07" file="wheeltec_meshes/Gimbal_07.stl" />
+  <mesh name="Gimbal_08" file="wheeltec_meshes/Gimbal_08.stl" />
+  <mesh name="Gimbal_10" file="wheeltec_meshes/Gimbal_10.stl" />
+  <mesh name="Gimbal_11" file="wheeltec_meshes/Gimbal_11.stl" />
+  <mesh name="Gimbal_13" file="wheeltec_meshes/Gimbal_13.stl" />
+  <mesh name="Gimbal_17" file="wheeltec_meshes/Gimbal_17.stl" />
+  <mesh name="Gimbal_18" file="wheeltec_meshes/Gimbal_18.stl" />
+  <mesh name="Gimbal_19" file="wheeltec_meshes/Gimbal_19.stl" />
+  <mesh name="Gimbal_20" file="wheeltec_meshes/Gimbal_20.stl" />
+  <mesh name="Gimbal_04_rotor" file="wheeltec_meshes/Gimbal_04_rotor.stl" />
+  <mesh name="Gimbal_09" file="wheeltec_meshes/Gimbal_09.stl" />
+  <mesh name="Gimbal_12" file="wheeltec_meshes/Gimbal_12.stl" />
+  <mesh name="Gimbal_14" file="wheeltec_meshes/Gimbal_14.stl" />
+  <mesh name="Gimbal_15" file="wheeltec_meshes/Gimbal_15.stl" />
+  <mesh name="Gimbal_16" file="wheeltec_meshes/Gimbal_16.stl" />
+  <mesh name="Adapter_M2_to_M3" file="wheeltec_meshes/Adapter_M2_to_M3.stl" />
+  <mesh name="LaserHolder_Approx" file="wheeltec_meshes/LaserHolder_Approx.stl" />
+  <mesh name="LaserBrass_D6_L10_5" file="wheeltec_meshes/LaserBrass_D6_L10_5.stl" />
+  <mesh name="LaserPCB_Envelope_7x13" file="wheeltec_meshes/LaserPCB_Envelope_7x13.stl" />
+  <mesh name="M2_screw_0" file="wheeltec_meshes/M2_screw_0.stl" />
+  <mesh name="M2_screw_1" file="wheeltec_meshes/M2_screw_1.stl" />
+  <mesh name="M3_screw_0" file="wheeltec_meshes/M3_screw_0.stl" />
+  <mesh name="M3_screw_1" file="wheeltec_meshes/M3_screw_1.stl" />
+</mujocoinclude>
