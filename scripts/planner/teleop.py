@@ -153,10 +153,8 @@ def main(planner_run: str = "rover_v2_l1", planner_ckpt: str = "planner_last.pt"
                 sensor_runtime.update()
                 sensor_runtime.draw(viewer.user_scn)
             panel = as_rgb(joystick_panel(K.KEYS.lit(), s.cmd, s.robot_velocity(), K.LEVELS[level]))
-            images = [(mujoco.MjrRect(12, 12, panel.shape[1], panel.shape[0]), panel)]
-            if sensor_runtime.rgb is not None:
-                images.append((mujoco.MjrRect(12, panel.shape[0] + 24, 640, 480), sensor_runtime.rgb))
-            viewer.set_images(images)
+            viewer.set_images((mujoco.MjrRect(12, 12, panel.shape[1], panel.shape[0]), panel))
+            sensor_runtime.update_camera_window()
             left = "Status\nKeys\nSkills"
             right = (f"{'FALLEN - press Backspace' if fallen else s.status()}{'  ' + note if note else ''}"
                      f"{'' if slow <= 1.05 else f'  (running {slow:.1f}x slower than real time)'}\n"

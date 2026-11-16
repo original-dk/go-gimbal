@@ -10,7 +10,7 @@ from supermimic.planner import keys as K
 class GimbalSensorTests(unittest.TestCase):
     def test_fusion_tracking_motion_loss_and_manual(self):
         g = GimbalOverlay()
-        with GimbalSensors(g) as runtime:
+        with GimbalSensors(g, camera_window=False) as runtime:
             for pose, euler in [([0, 0, .4], [0., 0., 0.]),
                                 ([.1, -.05, .4], [.08, -.08, .15])]:
                 quat = np.empty(4)

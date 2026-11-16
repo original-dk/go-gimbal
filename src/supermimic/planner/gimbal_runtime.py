@@ -6,10 +6,12 @@ from . import gimbal_perception as perception
 
 
 class GimbalSensors:
-    def __init__(self, overlay, enabled=True, auto=True, hz=15.):
+    def __init__(self, overlay, enabled=True, auto=True, hz=15., camera_window=True):
         self.overlay = overlay
         self.enabled, self.auto, self.hz = enabled, auto, hz
         self.renderer = None
+        self.camera_window = None
+        self.show_camera_window = camera_window
         self.scan = None
         self.measurement = (None, None)
         self.rgb = None
@@ -23,11 +25,22 @@ class GimbalSensors:
     def __enter__(self):
         if self.enabled and self.overlay is not None:
             self.renderer = mujoco.Renderer(self.overlay.model, height=480, width=640, max_geom=5000)
+            try:
+                if self.show_camera_window:
+                    self.camera_window = perception.CameraWindow(self.overlay.model)
+            except BaseException:
+                self.renderer.close()
+                self.renderer = None
+                raise
         return self
 
     def __exit__(self, *exc):
+        if self.camera_window is not None:
+            self.camera_window.close()
+            self.camera_window = None
         if self.renderer is not None:
             self.renderer.close()
+            self.renderer = None
 
     def key_callback(self, key):
         if key == 294:  # F5: no overlap with walking, speed, reset or skills
@@ -82,6 +95,13 @@ class GimbalSensors:
             self.goal = g.angles.copy()
             self.velocity[:] = 0
             self.status = 'manual'
+
+    def update_camera_window(self):
+        if self.camera_window is not None:
+            if not self.camera_window.update(self.overlay.model, self.overlay.data, 10.,
+                                             self.measurement, self.status):
+                self.camera_window.close()
+                self.camera_window = None
 
     def _hud(self, rgb, detection, fusion):
         import cv2
