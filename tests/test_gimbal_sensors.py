@@ -27,7 +27,7 @@ class GimbalSensorTests(unittest.TestCase):
                 self.assertLess(np.linalg.norm(np.cross(np.array(fusion['point_world_m'])-origin, direction)), .003)
                 self.assertEqual(runtime.rgb.shape, (480, 640, 3))
             # Turn away: no marker, no target truth fallback.
-            mujoco.mju_euler2Quat(quat, np.array([0., 0., np.pi]), 'xyz')
+            mujoco.mju_euler2Quat(quat, np.array([0., 0., np.pi/2]), 'xyz')
             g.update([0, 0, .4], quat)
             runtime.update(now=runtime.next_scan+1)
             self.assertEqual(runtime.status, 'fusion unavailable')
@@ -50,6 +50,25 @@ class GimbalSensorTests(unittest.TestCase):
                 runtime.update_camera_window()
             self.assertEqual(window.update.call_count, 1)
             self.assertIs(window.update.call_args.kwargs['rgb'], runtime.camera_pixels)
+
+    def test_rear_screen_position_and_marker(self):
+        from supermimic.planner import gimbal_perception as perception
+        g = GimbalOverlay()
+        quat = np.empty(4)
+        mujoco.mju_euler2Quat(quat, np.array([0., 0., np.pi/2]), 'xyz')
+        g.place_rear_screen([1, 2, .4], quat)
+        screen = g.model.body('rear_screen').id
+        np.testing.assert_allclose(g.model.body_pos[screen], [1, -.5, .8], atol=1e-10)
+        g.place_rear_screen([0, 0, .4], [1, 0, 0, 0])
+        mujoco.mju_euler2Quat(quat, np.array([0., 0., np.pi]), 'xyz')
+        g.update([0, 0, .4], quat)
+        with GimbalSensors(g, camera_window=False) as runtime:
+            runtime.update(now=0)
+            self.assertIsNotNone(runtime.measurement[0])
+            self.assertTrue(runtime.measurement[1]['valid'])
+        fixed = g.model.body_pos[screen].copy()
+        g.update([.5, 0, .4], quat)
+        np.testing.assert_array_equal(g.model.body_pos[screen], fixed)
 
     def test_existing_walking_and_skill_key_edges(self):
         keys = K.Keys()

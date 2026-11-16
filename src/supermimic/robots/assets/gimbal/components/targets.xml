@@ -23,4 +23,10 @@
   <body name="far_column_body" pos="3.2 1.35 0.38">
     <geom name="far_column" group="0" contype="1" conaffinity="1" mass="1" type="cylinder" size="0.14 0.38" rgba="0.85 0.5 0.2 1" />
   </body>
+  <body name="rear_screen" pos="-2.5 0 .8">
+    <geom name="rear_screen_panel" type="box" size=".02 1 .7" rgba=".92 .94 .96 1" group="0" />
+    <geom name="rear_screen_marker" type="box" pos=".023 0 0" size=".001 .22 .22" material="aruco_material" group="2" contype="0" conaffinity="0" euler="0 0 3.141592653589793" />
+    <geom type="box" pos="0 -0.8 -.75" size=".08 .10 .05" rgba=".2 .22 .25 1" group="1" />
+    <geom type="box" pos="0 0.8 -.75" size=".08 .10 .05" rgba=".2 .22 .25 1" group="1" />
+  </body>
 </mujocoinclude>

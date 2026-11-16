@@ -93,6 +93,8 @@ def main(planner_run: str = "rover_v2_l1", planner_ckpt: str = "planner_last.pt"
     overlay = GimbalOverlay(np.deg2rad(gimbal_yaw), np.deg2rad(gimbal_pitch), gimbal_target, source_model=source_model) if gimbal else None
 
     if overlay is not None:
+        initial_pos, initial_quat, _ = s.robot_pose()
+        overlay.place_rear_screen(initial_pos, initial_quat)
         mjm, mjd = overlay.model, overlay.data
         base_id = mjm.body('link_trunk').id
 

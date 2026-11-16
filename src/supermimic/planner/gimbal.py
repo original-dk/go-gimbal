@@ -105,6 +105,17 @@ class GimbalOverlay:
         ET.SubElement(root.find('asset'), 'texture', name='display_grid', type='2d', file='display_floor.png')
         material.set('texture', 'display_grid')
 
+    def place_rear_screen(self, initial_pos, initial_quat):
+        """Place once behind the initial heading; screen remains fixed in the world."""
+        rotation = np.empty(9)
+        mujoco.mju_quat2Mat(rotation, np.asarray(initial_quat, dtype=float))
+        heading = np.arctan2(rotation.reshape(3, 3)[1, 0], rotation.reshape(3, 3)[0, 0])
+        screen = self.model.body('rear_screen').id
+        self.model.body_pos[screen] = [initial_pos[0]-2.5*np.cos(heading),
+                                      initial_pos[1]-2.5*np.sin(heading), .8]
+        mujoco.mju_euler2Quat(self.model.body_quat[screen], np.array([0., 0., heading]), 'xyz')
+        mujoco.mj_forward(self.model, self.data)
+
     def aim(self, point_carrier):
         """Accept a point already expressed in the trunk frame, not camera pixels."""
         angles = self.solver.solve(point_carrier)

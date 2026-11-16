@@ -238,3 +238,7 @@ F5 切换自动/手动；I/J/K/L/U 手动操作会退出自动模式，F5 可恢
 原项目的感知、相机窗口和导出工具函数保存在 planner/gimbal_perception.py 中；
 teleop 使用 GimbalSensors 管理渲染与融合生命周期。
 测试：`uv run python -m unittest discover -s tests -p "test_gimbal*.py"`。
+
+初始朝向后方 2.5 m 新增 2 m 宽、1.4 m 高的标识大屏，中心离地 .8 m，
+正面朝向狗初始位置，使用同一 ArUco ID7。按初始位置/朝向放置一次，随后固定在世界中；
+狗转身后可通过相机和雷达识别。大屏沿用独立显示场景，不加入策略物理碰撞。
